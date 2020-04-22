@@ -1,4 +1,4 @@
-use crate::ansi::RESET;
+use crate::ansi::{RESET, RESET_HYPERLINK};
 use crate::difference::Difference;
 use crate::style::{Color, Style};
 use crate::write::AnyWrite;
@@ -35,7 +35,7 @@ where
 {
     fn clone(&self) -> AnsiGenericString<'a, S> {
         AnsiGenericString {
-            style: self.style,
+            style: self.style.clone(),
             string: self.string.clone(),
         }
     }
@@ -155,14 +155,14 @@ pub fn AnsiByteStrings<'a>(arg: &'a [AnsiByteString<'a>]) -> AnsiByteStrings<'a>
 impl Style {
     /// Paints the given text with this color, returning an ANSI string.
     #[must_use]
-    pub fn paint<'a, I, S: 'a + ToOwned + ?Sized>(self, input: I) -> AnsiGenericString<'a, S>
+    pub fn paint<'a, I, S: 'a + ToOwned + ?Sized>(&self, input: I) -> AnsiGenericString<'a, S>
     where
         I: Into<Cow<'a, S>>,
         <S as ToOwned>::Owned: fmt::Debug,
     {
         AnsiGenericString {
             string: input.into(),
-            style: self,
+            style: self.clone(),
         }
     }
 }
@@ -258,19 +258,19 @@ where
             match Difference::between(&window[0].style, &window[1].style) {
                 ExtraStyles(style) => write!(w, "{}", style.prefix())?,
                 Reset => write!(w, "{}{}", RESET, window[1].style.prefix())?,
-                Empty => { /* Do nothing! */ }
+                ResetHyperlink => {
+                    write!(w, "{}{}{}", RESET_HYPERLINK, RESET, window[1].style.prefix())?;
+                }
+                Empty => { /* Do nothing! */ },
             }
 
             w.write_str(&window[1].string)?;
         }
 
-        // Write the final reset string after all of the AnsiStrings have been
-        // written, *except* if the last one has no styles, because it would
-        // have already been written by this point.
+        // Write any final reset strings needed after all of the AnsiStrings
+        // have been written.
         if let Some(last) = self.0.last() {
-            if !last.style.is_plain() {
-                write!(w, "{}", RESET)?;
-            }
+            write!(w, "{}", last.style.suffix())?;
         }
 
         Ok(())
