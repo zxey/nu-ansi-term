@@ -1,4 +1,8 @@
-use std::rc::Rc;
+use arrayvec::ArrayString;
+
+/// Fixed size string that is used as a hyperlink, its size is limited to 4096
+/// which is `PATH_MAX` on Linux.
+pub type HyperlinkStr = ArrayString<4096>;
 
 /// A style is a collection of properties that can format a string
 /// using ANSI escape codes.
@@ -11,7 +15,7 @@ use std::rc::Rc;
 /// let style = Style::new().bold().on(Color::Black);
 /// println!("{}", style.paint("Bold on black"));
 /// ```
-#[derive(Eq, PartialEq, Clone)]
+#[derive(Eq, PartialEq, Clone, Copy)]
 #[cfg_attr(
     feature = "derive_serde_style",
     derive(serde::Deserialize, serde::Serialize)
@@ -48,7 +52,7 @@ pub struct Style {
     pub is_strikethrough: bool,
 
     /// Hyperlink target for this style
-    pub hyperlink_url: Option<Rc<str>>,
+    pub hyperlink_url: Option<HyperlinkStr>,
 }
 
 impl Style {
@@ -245,9 +249,9 @@ impl Style {
     /// let style = Style::new().hyperlink("https://example.org/");
     /// println!("{}", style.paint("example link"));
     /// ```
-    pub fn hyperlink<U: Into<Rc<str>>>(&self, url: U) -> Style {
+    pub fn hyperlink(&self, url: &str) -> Style {
         Style {
-            hyperlink_url: Some(url.into()),
+            hyperlink_url: HyperlinkStr::from(url).ok(),
             ..self.clone()
         }
     }
@@ -601,8 +605,8 @@ impl Color {
     /// let style = Color::Blue.hyperlink("https://example.org/");
     /// println!("{}", style.paint("example link"));
     /// ```
-    pub fn hyperlink<U: Into<Rc<str>>>(self, url: U) -> Style {
-        Style { foreground: Some(self), hyperlink_url: Some(url.into()), ..Style::default() }
+    pub fn hyperlink(self, url: &str) -> Style {
+        Style { foreground: Some(self), hyperlink_url: HyperlinkStr::from(url).ok(), ..Style::default() }
     }
 }
 

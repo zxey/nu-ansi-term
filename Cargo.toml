@@ -16,9 +16,10 @@ repository = "https://github.com/nushell/nu-ansi-term"
 doctest = true
 
 [features]
-derive_serde_style = ["serde"]
+derive_serde_style = ["serde", "arrayvec/serde"]
 
 [dependencies]
+arrayvec = "0.7.2"
 overload = "0.1.1"
 serde = { version="1.0.90", features=["derive"], optional=true }
 

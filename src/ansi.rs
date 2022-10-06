@@ -162,7 +162,7 @@ impl Color {
 /// `std::fmt` formatting without doing any extra allocation, and written to a
 /// string with the `.to_string()` method. For examples, see
 /// [`Style::prefix`](struct.Style.html#method.prefix).
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Copy)]
 pub struct Prefix(Style);
 
 /// Like `AnsiString`, but only displays the difference between two
@@ -172,7 +172,7 @@ pub struct Prefix(Style);
 /// `std::fmt` formatting without doing any extra allocation, and written to a
 /// string with the `.to_string()` method. For examples, see
 /// [`Style::infix`](struct.Style.html#method.infix).
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Copy)]
 pub struct Infix(Style, Style);
 
 /// Like `AnsiString`, but only displays the style suffix.
@@ -181,7 +181,7 @@ pub struct Infix(Style, Style);
 /// `std::fmt` formatting without doing any extra allocation, and written to a
 /// string with the `.to_string()` method. For examples, see
 /// [`Style::suffix`](struct.Style.html#method.suffix).
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Copy)]
 pub struct Suffix(Style);
 
 impl Style {
